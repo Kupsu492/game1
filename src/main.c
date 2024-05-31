@@ -23,6 +23,11 @@ typedef struct PlayerBall {
     Vector2 dir;
 } PlayerBall;
 
+typedef struct PlayerPetal {
+    Rectangle rect;
+    float speed;
+} PlayerPetal;
+
 void moveBall(Game *gameInfo, PlayerBall *ball) {
     float newX, newY;
     float diffrence = 1.0f;
@@ -61,6 +66,17 @@ void moveBall(Game *gameInfo, PlayerBall *ball) {
     }
 }
 
+void movePetal(Game *gameInfo, PlayerPetal *petal, float dir) {
+    float yPos = petal->rect.y + petal->speed * dir * GetFrameTime();
+    if (yPos < 0) {
+        petal->rect.y = 0;
+    } else if (yPos > (gameInfo->screenHeight - petal->rect.height)) {
+        petal->rect.y = gameInfo->screenHeight - petal->rect.height;
+    } else {
+        petal->rect.y = yPos;
+    }
+}
+
 int main(void)
 {
     Game gameInfo = {
@@ -83,7 +99,10 @@ int main(void)
         {1,1}
     };
 
-    Rectangle box = { gameInfo.screenWidth/2 - 100, gameInfo.screenHeight/2, 15, 50 };
+    PlayerPetal petal = {
+        { 100, gameInfo.screenHeight/2, 15, 100 },
+        500
+    };
 
     bool boxCollision = false;
     // int variable = 60;
@@ -95,17 +114,15 @@ int main(void)
         // variable++;
         // SetTargetFPS(variable % 20 + 10);
 
-        // Input
-        // if (IsKeyDown(KEY_SEMICOLON)) ballPos.x += movementSpeed;
-        // if (IsKeyDown(KEY_J)) ballPos.x -= movementSpeed;
-        // if (IsKeyDown(KEY_K)) ballPos.y += movementSpeed;
-        // if (IsKeyDown(KEY_L)) ballPos.y -= movementSpeed;
+        // Player movement
+        if (IsKeyDown(KEY_J)) movePetal(&gameInfo, &petal, 1);
+        if (IsKeyDown(KEY_K)) movePetal(&gameInfo, &petal, -1);
 
         if (IsKeyPressed(KEY_J) || IsKeyDown(KEY_K)) {
             moveBall(&gameInfo, &ball);
         }
 
-        boxCollision = CheckCollisionCircleRec(ball.pos, 50, box);
+        boxCollision = CheckCollisionCircleRec(ball.pos, 50, petal.rect);
 
         BeginDrawing();
             ClearBackground(RAYWHITE);
@@ -114,7 +131,7 @@ int main(void)
                 DrawText("Collision", GetScreenWidth()/2 - MeasureText("Collision", 20)/2, 10, 20, BLACK);
             }
 
-            DrawRectangleRec(box, BLUE);
+            DrawRectangleRec(petal.rect, BLUE);
             DrawCircleV(ball.pos, 50, MAROON);
         EndDrawing();
     }
