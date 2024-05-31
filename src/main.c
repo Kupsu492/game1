@@ -12,49 +12,50 @@ typedef struct EdgeCollision {
 typedef struct Game {
     float screenWidth;
     float screenHeight;
-
-    float ballSpeed;
-    int ballRadius;
-    EdgeCollision edges;
 } Game;
 
-typedef struct PlayerBall {
+typedef struct EntityBall {
     Vector2 pos;
     Vector2 dir;
-} PlayerBall;
+
+    float speed;
+    int radius;
+
+    EdgeCollision edges;
+} EntityBall;
 
 typedef struct PlayerPetal {
     Rectangle rect;
     float speed;
 } PlayerPetal;
 
-void moveBall(Game *gameInfo, PlayerBall *ball) {
+void moveBall(Game *gameInfo, EntityBall *ball) {
     float newX, newY;
     float diffrence = 1.0f;
 
-    newX = (gameInfo->ballSpeed * ball->dir.x * GetFrameTime()) + ball->pos.x;
-    newY = (gameInfo->ballSpeed * ball->dir.y * GetFrameTime()) + ball->pos.y;
+    newX = (ball->speed * ball->dir.x * GetFrameTime()) + ball->pos.x;
+    newY = (ball->speed * ball->dir.y * GetFrameTime()) + ball->pos.y;
 
-    if (newX >= gameInfo->edges.right) {
+    if (newX >= ball->edges.right) {
         ball->dir.x *= -1;
-        diffrence = (ball->pos.x - gameInfo->edges.right) / (ball->pos.x - newX);
+        diffrence = (ball->pos.x - ball->edges.right) / (ball->pos.x - newX);
         newY = ((newY - ball->pos.y) * diffrence) + ball->pos.y;
-        newX = gameInfo->edges.right;
-    } else if (newX <= gameInfo->edges.left) {
+        newX = ball->edges.right;
+    } else if (newX <= ball->edges.left) {
         ball->dir.x *= -1;
-        diffrence = (ball->pos.x - gameInfo->edges.left) / (ball->pos.x - newX);
+        diffrence = (ball->pos.x - ball->edges.left) / (ball->pos.x - newX);
         newY = ((newY - ball->pos.y) * diffrence) + ball->pos.y;
-        newX = gameInfo->edges.left;
-    } else if (newY >= gameInfo->edges.bottom) {
+        newX = ball->edges.left;
+    } else if (newY >= ball->edges.bottom) {
         ball->dir.y *= -1;
-        diffrence = (ball->pos.y - gameInfo->edges.bottom) / (ball->pos.y - newY);
+        diffrence = (ball->pos.y - ball->edges.bottom) / (ball->pos.y - newY);
         newX = ((newX - ball->pos.x) * diffrence) + ball->pos.x;
-        newY = gameInfo->edges.bottom;
-    } else if (newY <= gameInfo->edges.top) {
+        newY = ball->edges.bottom;
+    } else if (newY <= ball->edges.top) {
         ball->dir.y *= -1;
-        diffrence = (ball->pos.y - gameInfo->edges.top) / (ball->pos.y - newY);
+        diffrence = (ball->pos.y - ball->edges.top) / (ball->pos.y - newY);
         newX = ((newX - ball->pos.x) * diffrence) + ball->pos.x;
-        newY = gameInfo->edges.top;
+        newY = ball->edges.top;
     }
 
     ball->pos.x = newX;
@@ -82,21 +83,21 @@ int main(void)
     Game gameInfo = {
         800.0f,
         450.0f,
-        250.0f,
-        50,
-        {
-            gameInfo.ballRadius,
-            gameInfo.screenWidth - gameInfo.ballRadius,
-            gameInfo.screenHeight - gameInfo.ballRadius,
-            gameInfo.ballRadius
-        }
     };
 
     InitWindow(gameInfo.screenWidth, gameInfo.screenHeight, "My raylib game");
 
-    PlayerBall ball = {
+    EntityBall ball = {
         { (float) gameInfo.screenWidth/2, 99.0f },
-        {1,1}
+        {1,1},
+        250.0f,
+        20,
+        {
+            ball.radius,
+            gameInfo.screenWidth - ball.radius,
+            gameInfo.screenHeight - ball.radius,
+            ball.radius
+        }
     };
 
     PlayerPetal petal = {
@@ -117,10 +118,8 @@ int main(void)
         // Player movement
         if (IsKeyDown(KEY_J)) movePetal(&gameInfo, &petal, 1);
         if (IsKeyDown(KEY_K)) movePetal(&gameInfo, &petal, -1);
-
-        if (IsKeyPressed(KEY_J) || IsKeyDown(KEY_K)) {
-            moveBall(&gameInfo, &ball);
-        }
+        // Ball movement
+        moveBall(&gameInfo, &ball);
 
         boxCollision = CheckCollisionCircleRec(ball.pos, 50, petal.rect);
 
@@ -132,7 +131,7 @@ int main(void)
             }
 
             DrawRectangleRec(petal.rect, BLUE);
-            DrawCircleV(ball.pos, 50, MAROON);
+            DrawCircleV(ball.pos, ball.radius, MAROON);
         EndDrawing();
     }
 
