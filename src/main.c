@@ -30,39 +30,39 @@ typedef struct PlayerPetal {
 } PlayerPetal;
 
 void moveBall(Game *gameInfo, EntityBall *ball) {
-    float newX, newY;
-    float diffrence = 1.0f;
+    Vector2 newPos;
+    float movement = 1.0f;
 
-    newX = (ball->speed * ball->dir.x * GetFrameTime()) + ball->pos.x;
-    newY = (ball->speed * ball->dir.y * GetFrameTime()) + ball->pos.y;
+    newPos.x = (ball->speed * ball->dir.x * GetFrameTime()) + ball->pos.x;
+    newPos.y = (ball->speed * ball->dir.y * GetFrameTime()) + ball->pos.y;
 
-    if (newX >= ball->edges.right) {
+    if (newPos.x >= ball->edges.right) {
         ball->dir.x *= -1;
-        diffrence = (ball->pos.x - ball->edges.right) / (ball->pos.x - newX);
-        newY = ((newY - ball->pos.y) * diffrence) + ball->pos.y;
-        newX = ball->edges.right;
-    } else if (newX <= ball->edges.left) {
+        movement = (ball->pos.x - ball->edges.right) / (ball->pos.x - newPos.x);
+        newPos.y = ((newPos.y - ball->pos.y) * movement) + ball->pos.y;
+        newPos.x = ball->edges.right;
+    } else if (newPos.x <= ball->edges.left) {
         ball->dir.x *= -1;
-        diffrence = (ball->pos.x - ball->edges.left) / (ball->pos.x - newX);
-        newY = ((newY - ball->pos.y) * diffrence) + ball->pos.y;
-        newX = ball->edges.left;
-    } else if (newY >= ball->edges.bottom) {
+        movement = (ball->pos.x - ball->edges.left) / (ball->pos.x - newPos.x);
+        newPos.y = ((newPos.y - ball->pos.y) * movement) + ball->pos.y;
+        newPos.x = ball->edges.left;
+    } else if (newPos.y >= ball->edges.bottom) {
         ball->dir.y *= -1;
-        diffrence = (ball->pos.y - ball->edges.bottom) / (ball->pos.y - newY);
-        newX = ((newX - ball->pos.x) * diffrence) + ball->pos.x;
-        newY = ball->edges.bottom;
-    } else if (newY <= ball->edges.top) {
+        movement = (ball->pos.y - ball->edges.bottom) / (ball->pos.y - newPos.y);
+        newPos.x = ((newPos.x - ball->pos.x) * movement) + ball->pos.x;
+        newPos.y = ball->edges.bottom;
+    } else if (newPos.y <= ball->edges.top) {
         ball->dir.y *= -1;
-        diffrence = (ball->pos.y - ball->edges.top) / (ball->pos.y - newY);
-        newX = ((newX - ball->pos.x) * diffrence) + ball->pos.x;
-        newY = ball->edges.top;
+        movement = (ball->pos.y - ball->edges.top) / (ball->pos.y - newPos.y);
+        newPos.x = ((newPos.x - ball->pos.x) * movement) + ball->pos.x;
+        newPos.y = ball->edges.top;
     }
 
-    ball->pos.x = newX;
-    ball->pos.y = newY;
+    ball->pos.x = newPos.x;
+    ball->pos.y = newPos.y;
 
     // If edge movement is not perceivable, move again
-    if (diffrence < 0.5f) {
+    if (movement < 0.5f) {
         moveBall(gameInfo, ball);
     }
 }
